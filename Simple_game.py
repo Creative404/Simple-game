@@ -1,7 +1,25 @@
 import os
 import sys
+from time import sleep
+
 import pygame
+from random import randint
+
+color_white = (255, 255, 255)
+color_pink = (255, 20, 147)
+color_red = (250, 0, 0)
+
 pygame.init()
+#mandatry functions rquariedt ot star game
+
+pygame.font.init()
+#adding font to game
+
+text_parametrs_points = pygame.font.Font(None, 80)
+text_parametrs_lives = pygame.font.Font(None, 50)
+text_parametrs_end_game = pygame.font.Font(None, 375)
+
+
 
 # Fixing missing phoTO
 if getattr(sys, 'frozen', False):  # checking IF FILE IS OPENING AS EXE
@@ -9,40 +27,75 @@ if getattr(sys, 'frozen', False):  # checking IF FILE IS OPENING AS EXE
 else:
     base_path = os.path.dirname(__file__)  # Ustalamy bazową ścieżkę dla skryptu Python
 
-#mandatry functions rquariedt ot star game
 
-screen_size = pygame.display.set_mode((1665 , 935)) #remeber to ad () to fit 2 numbers
+screen_size = pygame.display.set_mode((1600 , 900)) #remeber to ad () to fit 2 numbers
 #pygame.display.set_mode() setting screnn size
 
-pygame.display.set_caption("Simple game")
+pygame.display.set_caption("Anvil madness")
 #seting window name
 
-white_color = (255, 255, 255)
-black_color = (0, 0, 0)
-#seting collors
 
 player_avatar = pygame.image.load(os.path.join(base_path, "Creative (33a).png")) # plis work as EXE pls
+anvil_image = pygame.image.load(os.path.join(base_path, "Anvil.png"))
+background = pygame.image.load(os.path.join(base_path, "factory.jpeg"))
 #here we loading our spirite
 
-player_avatar = pygame.transform.scale(player_avatar, (100, 150))
+player_avatar = pygame.transform.scale(player_avatar, (220, 300))
+anvil_image = pygame.transform.scale(anvil_image, (150,120))
+background = pygame.transform.scale(background, (1600 , 900))
 #chaingi avata's size width + height
 
 
-#user_heigt_y = 50
-#user_width_x = 20
-#user sizes
-
-user_position_y = 100
-user_position_x = 100
+user_position_y = 580
+user_position_x = -65
 #player position
 
+Lives_position_y = user_position_y
+
+anvil_image_y = -120 # -120     900
+anvil_image_x = 500 # 0       1450
+
+bacground_y = 0
+bacground_x = 0
+
 user_movment = 5
+anvil_movment = 5
+
+lives = 3
+points = 0
+
+last_hit = 2000
+game_time = 0
+
+difficulty = 0
 
 game_status = True
 while game_status:
+    difficulty += 1
+
+    killable_obj = randint(0,1450)
+
+
+    if difficulty >= 450:
+        anvil_movment +=2
+        difficulty = 0
+
+
+    if anvil_image_y >= 900:
+        anvil_image_x = killable_obj
+        points += 10
+        anvil_image_y = 0
+
+
+
 
     pygame.time.delay(10)
     #slowing game (framerate idk)
+
+    anvil_image_y += anvil_movment
+
+    #if gametime
+
 
     for user_action in pygame.event.get():
         #going thurgut all action in pygame
@@ -53,40 +106,63 @@ while game_status:
     keyboard_input = pygame.key.get_pressed()
     #singing pyfunction "presing keyboard" to keyboard_inpunt
 
-    if keyboard_input[pygame.K_w]:
-        if user_position_y <= -15:
-            user_position_y = -15
-        else:
-            user_position_y -= user_movment
-
-    if keyboard_input[pygame.K_s]:
-        if user_position_y >= 795:
-            user_position_y = 795
-        else:
-            user_position_y += user_movment
-
-    if keyboard_input[pygame.K_a]:
-        if user_position_x <= -27:
-            user_position_x = -27           #1665 , 935    100, 150
+    if keyboard_input[pygame.K_a] or keyboard_input[pygame.K_LEFT]:
+        if user_position_x <= -65:
+            user_position_x = -65
         else:
             user_position_x -= user_movment
 
-    if keyboard_input[pygame.K_d]:
-        if user_position_x >= 1587:
-            user_position_x = 1587
+    if keyboard_input[pygame.K_d] or keyboard_input[pygame.K_RIGHT]:
+        if user_position_x >= 1430:
+            user_position_x = 1430
         else:
             user_position_x += user_movment
-    #control user movment
 
-    screen_size.fill(black_color)
-    #calling function "pygame.display" singnet to screen_size
+    lives_display = text_parametrs_lives.render(("Lives: " + str(lives)), True, color_pink)
+    points_display = text_parametrs_points.render(("Points: " + str(points)), True, color_white)
+    end_screen =text_parametrs_end_game.render("GAME OVER", True, color_red)
+
+
+
+    #lives = text_paramters.render(b ,True, pink)
+    #parameters render it
+
+    player_hitbox= pygame.Rect(user_position_x, user_position_y, 170, 285)
+    anvil_hitbox = pygame.Rect(anvil_image_x, anvil_image_y,87, 92)
+    #creatibg rectange "hitbox" gibing postion and x,y
+
+    game_time = pygame.time.get_ticks()
+
+    if anvil_hitbox.colliderect(player_hitbox):
+        #if player touch anvil hitbox
+        if game_time - last_hit > 2000:
+        # cooldown a odjemowanei zycia
+            lives -= 1
+            last_hit = game_time
+
+
+
+    screen_size.blit(background, (bacground_x, bacground_y))
 
     screen_size.blit(player_avatar, (user_position_x, user_position_y))
     #now we using srite so we dond need sizes and screen cuz it is in  pygame.display.update()
+
     ##oldredawing screnn-size, player color, (palyer positionxy + sizexy)
+    screen_size.blit(anvil_image, (anvil_image_x, anvil_image_y))
+
+    screen_size.blit(lives_display, (user_position_x + 62, 865))
+    screen_size.blit(points_display, (1240, 35))
+
+
+
 
     pygame.display.update()
     #refresh game
+    if lives == -1:
+        screen_size.blit(end_screen, (5, 330))
+        pygame.display.update()
+        sleep(2)
+        game_status = False
 
 pygame.quit()
 #when player click "X" clsoe window
