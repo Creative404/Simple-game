@@ -5,27 +5,31 @@ from time import sleep
 import pygame
 from random import randint
 
-color_white = (255, 255, 255)
-color_pink = (255, 20, 147)
-color_red = (250, 0, 0)
-
 pygame.init()
 #mandatry functions rquariedt ot star game
 
-pygame.font.init()
-#adding font to game
-
-text_parametrs_points = pygame.font.Font(None, 80)
-text_parametrs_lives = pygame.font.Font(None, 50)
-text_parametrs_end_game = pygame.font.Font(None, 375)
-
-
+color_white = (255, 255, 255)
+color_pink = (255, 20, 147)
+color_red = (250, 0, 0)
+#colors
 
 # Fixing missing phoTO
 if getattr(sys, 'frozen', False):  # checking IF FILE IS OPENING AS EXE
     base_path = sys._MEIPASS  # idk what im doingE
 else:
     base_path = os.path.dirname(__file__)  # Ustalamy bazową ścieżkę dla skryptu Python
+
+pygame.font.init()
+text_parametrs_points = pygame.font.Font(None, 80)
+text_parametrs_lives = pygame.font.Font(None, 50)
+text_parametrs_end_game = pygame.font.Font(None, 375)
+#adding font to game
+
+pygame.mixer.init()
+hit_sound = pygame.mixer.Sound(os.path.join(base_path, "Anvil.mp3"))
+#adding sounds
+
+
 
 
 screen_size = pygame.display.set_mode((1600 , 900)) #remeber to ad () to fit 2 numbers
@@ -64,7 +68,7 @@ anvil_movment = 5
 lives = 3
 points = 0
 
-last_hit = 2000
+last_hit = 0
 game_time = 0
 
 difficulty = 0
@@ -135,8 +139,9 @@ while game_status:
 
     if anvil_hitbox.colliderect(player_hitbox):
         #if player touch anvil hitbox
-        if game_time - last_hit > 2000:
+        if game_time - last_hit > 1250:
         # cooldown a odjemowanei zycia
+            hit_sound.play()
             lives -= 1
             last_hit = game_time
 
